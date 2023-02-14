@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 anchor-lang = "0.26.0"
-uint = "0.9.5"
+uint = "0.9.1"
 spl-token = { version = "3.3.0", features = ["no-entrypoint"] }
 spl-token-swap = { version = "3.0.0", features = ["no-entrypoint"] }
 thiserror = "1.0.31"
