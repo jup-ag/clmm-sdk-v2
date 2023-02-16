@@ -33,44 +33,29 @@ describe("swap_with_partner", () => {
   const program = new Program(ClmmpoolIDL as anchor.Idl, programId, anchorProvider);
   const ctx = ClmmpoolContext.fromWorkspace(provider, program);
 
-  it("test simulate swap", async () => {
-    const clmmpoolAddr = new PublicKey(
-      "7MPnn7k6uYSMcW7VvB8GUcEedLApmsAG1Fesfufv7rBk"
-    );
-    const clmmpoolData = await ctx.fetcher.getPool(clmmpoolAddr, true);
-    const tokenAmount = new u64(1000000);
-    const aToB = false;
-    const byAmountIn = true;
+  // it("test simulate swap", async () => {
+  //   const clmmpoolAddr = new PublicKey(
+  //     "CZv2gBbCU6HmaVHegbns8UEmTfa3DL3SE5SfnmJ4LDNG"
+  //   );
+  //   const clmmpoolData = await ctx.fetcher.getPool(clmmpoolAddr, true);
+  //   const tokenAmount = new u64(71370000);
+  //   const aToB = false;
+  //   const byAmountIn = true;
       
-    const clmmpool = new ClmmpoolClientImpl(ctx);
-    const pool = await clmmpool.getPool(clmmpoolAddr, true);
-    const swapQuote = await pool.simulateSwap(aToB, byAmountIn, tokenAmount);
+  //   const clmmpool = new ClmmpoolClientImpl(ctx);
+  //   const pool = await clmmpool.getPool(clmmpoolAddr, true);
+  //   const swapQuote = await pool.simulateSwap(aToB, byAmountIn, tokenAmount);
 
-    console.log("------------------------------")
-    const remainAccount = await pool.createTickArrayRange(aToB)
-    for(const a of remainAccount) {
-      console.log(a.toString(), "111111");
-    }
-
-    const ticks = pool.getAllTicksFromTickArrays(aToB);
-
-    const mapAddress = PDAUtil.getTickArrayMapPDA(programId, clmmpoolAddr).publicKey;
-    const tickArrayMap = await ctx.fetcher.getTickArrayMap(mapAddress, true);
-    console.log("------------------------------")
-    const swapResult = computeSwap(aToB, byAmountIn, tokenAmount, clmmpoolData!, ticks, clmmpoolAddr, tickArrayMap!);
-    for (const a of swapResult.swapTickArrays) {
-      console.log(a.toString());
-    }
-    // console.log(swapQuote.estimatedAmountIn.toString(), "===> amountIn");
-    // console.log(swapQuote.estimatedAmountOut.toString(), "===> amountOut");
-    // console.log(swapQuote.estimatedEndSqrtPrice.toString(), "====>end sqrt price");
-    // console.log(swapQuote.estimatedFeeAmount.toString(), "=====>feeAmount");
-    // console.log(swapQuote.isExceed, "is exceed");
-  });
+  //   console.log(swapQuote.estimatedAmountIn.toString(), "===> amountIn");
+  //   console.log(swapQuote.estimatedAmountOut.toString(), "===> amountOut");
+  //   console.log(swapQuote.estimatedEndSqrtPrice.toString(), "====>end sqrt price");
+  //   console.log(swapQuote.estimatedFeeAmount.toString(), "=====>feeAmount");
+  //   console.log(swapQuote.isExceed, "is exceed");
+  // });
 
 //   it("test list rewarders", async () => {
 //     const clmmpoolAddr = new PublicKey(
-//       "7AWvuhjEo4HRAggdXPfSc1yGiA4L31Kk3M2jFhcAE17W"
+//       "CZv2gBbCU6HmaVHegbns8UEmTfa3DL3SE5SfnmJ4LDNG"
 //     );
 
 //     const s = await listRewarderInfosFromClmmpool(ctx, clmmpoolAddr);
@@ -83,41 +68,43 @@ describe("swap_with_partner", () => {
 //   });
 // });
 
-  // it("test emission every day", async () => {
-  //   const clmmpoolAddr = new PublicKey(
-  //     "DQdz7vPZg2jdkgecvDnMsTFLB7zniF1qTUNnEpG9B6mc"
-  //   );
+  it("test emission every day", async () => {
+    const clmmpoolAddr = new PublicKey(
+      "rdHNQpTTkMmQfFfKAorEHbkWgGsjYF2af8s9MGEdDXn"
+    );
     
-  //   const positionKey = new PublicKey(
-  //     "5yqbwxgibzg6KjxdxWdw3GJMKv3GSo1GK2TBjc2TsHTt"
-  //   );
-  //   const positionKey1 = new PublicKey(
-  //     "AeBqvKYyRjzRvLUWQCyrW2EyjPmiT7yeHVHAcw37kXZn"
-  //   );
-  //   const positionKey2 = new PublicKey(
-  //     "Fqiu1BXhhoydPQLnT5VBRbGnsgq1MSP7eCWwQuNHjbWY"
-  //   );
+    // const positionKey = new PublicKey(
+    //   "5yqbwxgibzg6KjxdxWdw3GJMKv3GSo1GK2TBjc2TsHTt"
+    // );
+    // const positionKey1 = new PublicKey(
+    //   "AeBqvKYyRjzRvLUWQCyrW2EyjPmiT7yeHVHAcw37kXZn"
+    // );
+    // const positionKey2 = new PublicKey(
+    //   "Fqiu1BXhhoydPQLnT5VBRbGnsgq1MSP7eCWwQuNHjbWY"
+    // );
 
-  //   const clmmpool = new ClmmpoolClientImpl(ctx);
+    const clmmpool = new ClmmpoolClientImpl(ctx);
 
-  //   const pool = await clmmpool.getPool(clmmpoolAddr);
+    const pool = await clmmpool.getPool(clmmpoolAddr);
 
-  //   console.log("1");
-  //   const p1 = await pool.posRewardersAmount(positionKey);
+    console.log("1");
+    const p1 = await pool.emissionEveryDay();
+    for(const p of p1!) {
+      console.log(p.emissions.toString());
+    }
 
-  //   console.log("2");
-  //   const p2 = await pool.posRewardersAmount(positionKey1);
+    // console.log("2");
+    // const p2 = await pool.posRewardersAmount(positionKey1);
 
-  //   console.log("3");
-  //   const p3 = await pool.posRewardersAmount(positionKey2);
+    // console.log("3");
+    // const p3 = await pool.posRewardersAmount(positionKey2);
     
-  //   console.log("4");
-  //   const pp = await pool.poolRewardersAmount();
-  //   console.log("ppp", pp.toString());
+    // console.log("4");
+    // const pp = await pool.poolRewardersAmount();
+    // console.log("ppp", pp.toString());
 
-  //   console.log(p1[0].toString(), p2[0].toString(), p3[0].toString());
-  // });
-});
+    // console.log(p1[0].toString(), p2[0].toString(), p3[0].toString());
+  });
 
 function loadProvider(): Provider {
     const home: string = process.env.HOME!;
@@ -126,7 +113,7 @@ function loadProvider(): Provider {
       "utf8"
     );
     const config = parse(configFile);
-    const url = getURL('mainnet-beta');
+    const url = getURL('devnet');
     const wallet = new SignerWallet(keypairFromFile(config.keypair_path));
     const provider = SolanaProvider.init({
       connection: new Connection(url, {
