@@ -63,7 +63,7 @@ impl CremaClmm {
             key: keyed_account.key,
             label,
             reserve_mints,
-            reserve_decimals: Default::default(),
+            reserve_decimals: [keyed_account.decimals_a, keyed_account.decimals_b],
             program_id: keyed_account.account.owner,
             pool_address: keyed_account.key,
             pool_info,
@@ -197,9 +197,9 @@ impl Amm for CremaClmm {
         };
 
         let not_enough_liquidity = if by_amount_in {
-            swap_result.amount_in < quote_params.in_amount as u128
+            swap_result.amount_in < quote_params.in_amount
         } else {
-            swap_result.amount_out < quote_params.in_amount as u128
+            swap_result.amount_out < quote_params.in_amount
         };
 
         let fee_pct = Decimal::from_f32_retain(self.fee_rate as f32).unwrap();
@@ -208,6 +208,11 @@ impl Amm for CremaClmm {
             .abs()
             .div(before_price)
             .mul(Decimal::from_f32_retain(100.0).unwrap());
+
+        println!(
+            "{:?}::{:?}::{:?}",
+            before_price, after_price, price_impact_pct
+        );
         Ok(Quote {
             not_enough_liquidity,
             min_in_amount: Option::None,
@@ -265,15 +270,15 @@ mod tests {
         println!("{:?}", tick_map_address);
         let tick_map_data = rpc_client.get_account_data(&tick_map_address).unwrap();
         let tick_array_map = Box::new(tick_map_data);
-        let harness = Harness::new(tick_array_map);
-        let keyed_account = harness.get_keyed_accounts(POOL).unwrap();
+        let harness = Harness::new(tick_array_map, 5, 9);
+        let keyed_account = harness.get_keyed_accounts(POOL, 5, 9).unwrap();
 
         let mut amm = CremaClmm::from_keyed_account(&keyed_account).unwrap();
         harness.update_amm(&mut amm);
 
         let quote = amm
             .quote(&QuoteParams {
-                in_amount: 600000000000,
+                in_amount: 6000000000000,
                 input_mint: token_b,
                 output_mint: token_a,
             })
