@@ -250,8 +250,7 @@ mod tests {
         let token_a: Pubkey = pubkey!("DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263");
         let token_b: Pubkey = pubkey!("So11111111111111111111111111111111111111112");
 
-        let config = Config::load("/Users/hgamiui9/.config/solana/cli/config.yml").unwrap();
-        let json_rpc_url = config.json_rpc_url.clone();
+        let json_rpc_url = "https://mercurial.rpcpool.com/e1ae11b59df1dfe6cfaabca05d66";
         let rpc_timeout = Duration::from_secs(200);
         let commitment = CommitmentConfig {
             commitment: CommitmentLevel::Finalized,
@@ -268,6 +267,7 @@ mod tests {
 
         // must get once tick array map date before init amm
         let tick_map_address = Clmmpool::get_tick_map_address(&POOL, &SWAP_PROGRAM_ID);
+        println!("{:?}", tick_map_address);
         let tick_map_data = rpc_client.get_account_data(&tick_map_address).unwrap();
         let tick_array_map = Box::new(tick_map_data);
         let harness = Harness::new(tick_array_map, 5, 9);

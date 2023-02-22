@@ -1,3 +1,5 @@
+use anyhow::Result;
+
 use super::fetcher::PoolInfo;
 use crate::math::{
     clmm_math::{compute_swap_step, SwapStepResult},
@@ -58,6 +60,15 @@ impl ComputeSwapResult {
         self.fee_amount = self.fee_amount.checked_add(step_result.fee_amount).unwrap();
         self.next_sqrt_price = step_result.next_sqrt_price;
     }
+
+    pub fn to_u64(&self) -> Result<ComputeSwapResult> {
+        Ok(ComputeSwapResult {
+            amount_in: self.amount_in.try_into()?,
+            amount_out: self.amount_out.try_into()?,
+            fee_amount: self.fee_amount.try_into()?,
+            next_sqrt_price: self.next_sqrt_price.try_into()?,
+        })
+    }
 }
 
 pub fn compute_swap(
@@ -65,7 +76,7 @@ pub fn compute_swap(
     a2b: bool,
     by_amount_in: bool,
     amount: u64,
-) -> ComputeSwapResult {
+) -> Result<ComputeSwapResult> {
     let (_, ticks) = pool_info.ticks_for_swap(a2b, 100);
     let mut pool = pool_info.pool;
     let mut remainer_amount = amount;
@@ -84,8 +95,7 @@ pub fn compute_swap(
             remainer_amount,
             pool.fee_rate,
             by_amount_in,
-        )
-        .unwrap();
+        )?;
 
         let mut step_info = StepInfo::from(
             remainer_amount,
@@ -130,5 +140,5 @@ pub fn compute_swap(
     }
 
     swap_result.amount_in += swap_result.fee_amount;
-    swap_result
+    Ok(swap_result.to_u64()?)
 }
