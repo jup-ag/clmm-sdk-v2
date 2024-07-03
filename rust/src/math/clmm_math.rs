@@ -3,6 +3,8 @@ use std::{
     u128,
 };
 
+use anyhow::Result;
+
 use super::bn::Downcast;
 use super::{
     bn::{Shift, U256},
@@ -289,9 +291,13 @@ pub fn get_delta_up_from_input(
     a_to_b: bool,
 ) -> Result<U256, ErrorCode> {
     let sqrt_price_diff = if current_sqrt_price > target_sqrt_price {
-        current_sqrt_price.checked_sub(target_sqrt_price).unwrap()
+        current_sqrt_price
+            .checked_sub(target_sqrt_price)
+            .ok_or(ErrorCode::MathError)?
     } else {
-        target_sqrt_price.checked_sub(current_sqrt_price).unwrap()
+        target_sqrt_price
+            .checked_sub(current_sqrt_price)
+            .ok_or(ErrorCode::MathError)?
     };
     if sqrt_price_diff == 0 || liquidity == 0 {
         return Ok(U256::zero());
@@ -304,12 +310,15 @@ pub fn get_delta_up_from_input(
         let denomminator = current_sqrt_price.full_mul(target_sqrt_price);
         Ok(numberator
             .checked_div_round_up_if(denomminator, true)
-            .unwrap())
+            .ok_or(ErrorCode::MathError)?)
     } else {
         let product = liquidity.full_mul(sqrt_price_diff);
         let should_round_up = product.0[0] > 0;
         if should_round_up {
-            return Ok(product.shift_word_right().checked_add(U256::one()).unwrap());
+            return Ok(product
+                .shift_word_right()
+                .checked_add(U256::one())
+                .ok_or(ErrorCode::MathError)?);
         }
         Ok(product.shift_word_right())
     }
@@ -322,9 +331,13 @@ pub fn get_delta_down_from_output(
     a_to_b: bool,
 ) -> Result<U256, ErrorCode> {
     let sqrt_price_diff = if current_sqrt_price > target_sqrt_price {
-        current_sqrt_price.checked_sub(target_sqrt_price).unwrap()
+        current_sqrt_price
+            .checked_sub(target_sqrt_price)
+            .ok_or(ErrorCode::MathError)?
     } else {
-        target_sqrt_price.checked_sub(current_sqrt_price).unwrap()
+        target_sqrt_price
+            .checked_sub(current_sqrt_price)
+            .ok_or(ErrorCode::MathError)?
     };
     if sqrt_price_diff == 0 || liquidity == 0 {
         return Ok(U256::zero());
@@ -340,7 +353,7 @@ pub fn get_delta_down_from_output(
         let denomminator = current_sqrt_price.full_mul(target_sqrt_price);
         Ok(numberator
             .checked_div_round_up_if(denomminator, false)
-            .unwrap())
+            .ok_or(ErrorCode::MathError)?)
     }
 }
 

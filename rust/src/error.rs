@@ -132,4 +132,7 @@ pub enum ErrorCode {
 
     #[error("Invalid fixed token type")]
     InvalidFixedTokenType,
+
+    #[error("Math error")]
+    MathError,
 }
