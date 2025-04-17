@@ -94,20 +94,16 @@ impl Tick {
         )
     }
 
-    pub fn cross_update(&mut self, pool: &Clmmpool, a_to_b: bool) -> u128 {
+    pub fn cross_update(&mut self, pool: &Clmmpool, a_to_b: bool) -> Option<u128> {
         let liquidity = pool.liquidity;
         let signed_liquidity_change = match a_to_b {
             true => -self.liquidity_net,
             false => self.liquidity_net,
         };
         let current_liquidity = if signed_liquidity_change > 0 {
-            liquidity
-                .checked_add(signed_liquidity_change as u128)
-                .unwrap()
+            liquidity.checked_add(signed_liquidity_change as u128)?
         } else {
-            liquidity
-                .checked_sub(signed_liquidity_change.abs() as u128)
-                .unwrap()
+            liquidity.checked_sub(signed_liquidity_change.abs() as u128)?
         };
         self.fee_growth_outside_a = pool
             .fee_growth_global_a
@@ -124,6 +120,6 @@ impl Tick {
                 .growth_global
                 .wrapping_sub(self.reward_growth_outside[idx]);
         }
-        current_liquidity
+        Some(current_liquidity)
     }
 }

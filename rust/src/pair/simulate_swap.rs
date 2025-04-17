@@ -1,9 +1,12 @@
-use anyhow::Result;
+use anyhow::{Context, Result};
 
 use super::fetcher::PoolInfo;
-use crate::math::{
-    clmm_math::{compute_swap_step, SwapStepResult},
-    tick_math::get_tick_at_sqrt_price,
+use crate::{
+    error::ErrorCode,
+    math::{
+        clmm_math::{compute_swap_step, SwapStepResult},
+        tick_math::get_tick_at_sqrt_price,
+    },
 };
 
 #[derive(Debug, Clone, Copy, Default)]
@@ -54,11 +57,22 @@ pub struct ComputeSwapResult {
 }
 
 impl ComputeSwapResult {
-    fn update(&mut self, step_result: &SwapStepResult) {
-        self.amount_in = self.amount_in.checked_add(step_result.amount_in).unwrap();
-        self.amount_out = self.amount_out.checked_add(step_result.amount_out).unwrap();
-        self.fee_amount = self.fee_amount.checked_add(step_result.fee_amount).unwrap();
+    fn update(&mut self, step_result: &SwapStepResult) -> Result<()> {
+        self.amount_in = self
+            .amount_in
+            .checked_add(step_result.amount_in)
+            .ok_or(ErrorCode::MathError)?;
+        self.amount_out = self
+            .amount_out
+            .checked_add(step_result.amount_out)
+            .ok_or(ErrorCode::MathError)?;
+        self.fee_amount = self
+            .fee_amount
+            .checked_add(step_result.fee_amount)
+            .ok_or(ErrorCode::MathError)?;
         self.next_sqrt_price = step_result.next_sqrt_price;
+
+        Ok(())
     }
 
     pub fn to_u64(&self) -> Result<ComputeSwapResult> {
@@ -107,15 +121,21 @@ pub fn compute_swap(
         if step_result.amount_in != 0 {
             match by_amount_in {
                 true => {
-                    remainer_amount = remainer_amount.checked_sub(step_result.amount_in).unwrap();
-                    remainer_amount = remainer_amount.checked_sub(step_result.fee_amount).unwrap();
+                    remainer_amount = remainer_amount
+                        .checked_sub(step_result.amount_in)
+                        .context(ErrorCode::MathError)?;
+                    remainer_amount = remainer_amount
+                        .checked_sub(step_result.fee_amount)
+                        .context(ErrorCode::MathError)?;
                 }
                 false => {
-                    remainer_amount = remainer_amount.checked_sub(step_result.amount_out).unwrap();
+                    remainer_amount = remainer_amount
+                        .checked_sub(step_result.amount_out)
+                        .context(ErrorCode::MathError)?;
                 }
             }
             // update swap result
-            swap_result.update(&step_result);
+            swap_result.update(&step_result)?;
         }
         step_info.after_remainer = remainer_amount;
         step_info.amount_used = amount - remainer_amount;
@@ -128,7 +148,9 @@ pub fn compute_swap(
             } else {
                 next_tick.index
             };
-            pool.liquidity = next_tick.cross_update(&pool, a2b);
+            pool.liquidity = next_tick
+                .cross_update(&pool, a2b)
+                .context("failed to update")?;
         } else {
             pool.current_sqrt_price = step_result.next_sqrt_price;
             pool.current_tick_index = get_tick_at_sqrt_price(pool.current_sqrt_price);
