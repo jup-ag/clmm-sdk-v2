@@ -1,6 +1,6 @@
 use borsh::{BorshDeserialize, BorshSerialize};
-use solana_client::rpc_client::RpcClient;
 use solana_program::instruction::{AccountMeta, Instruction};
+use solana_rpc_client::rpc_client::RpcClient;
 use solana_sdk::{pubkey, pubkey::Pubkey};
 use std::vec;
 
