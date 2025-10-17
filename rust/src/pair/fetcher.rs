@@ -6,7 +6,7 @@ use crate::state::{
     tick_array::{TickArray, CAP},
     tick_array_map::TickArrayMap,
 };
-use solana_sdk::pubkey::Pubkey;
+use solana_pubkey::Pubkey;
 
 #[derive(Clone, Copy)]
 pub struct TickArrayInfo {

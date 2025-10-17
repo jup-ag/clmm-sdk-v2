@@ -1,7 +1,7 @@
 use borsh::{BorshDeserialize, BorshSerialize};
-use solana_program::instruction::{AccountMeta, Instruction};
+use solana_instruction::{AccountMeta, Instruction};
+use solana_pubkey::Pubkey;
 use solana_rpc_client::rpc_client::RpcClient;
-use solana_sdk::{pubkey, pubkey::Pubkey};
 use std::vec;
 
 use crate::state::clmmpool::Clmmpool;
@@ -9,7 +9,8 @@ use crate::state::tick_array::TickArray;
 use crate::state::tick_array_map::TickArrayMap;
 use crate::utils::sighash;
 
-pub const SWAP_PROGRAM_ID: Pubkey = pubkey!("CLMM9tUoggJu2wagPkkqs9eFG4BWhVBZWkP1qv3Sp7tR");
+pub const SWAP_PROGRAM_ID: Pubkey =
+    Pubkey::from_str_const("CLMM9tUoggJu2wagPkkqs9eFG4BWhVBZWkP1qv3Sp7tR");
 
 #[derive(BorshSerialize, BorshDeserialize, Eq, PartialEq, Debug, Clone)]
 pub struct SwapWithPartnerArgs {
@@ -97,7 +98,7 @@ pub fn new_swap_with_partner(
         AccountMeta::new_readonly(*partner, false),
         AccountMeta::new(*partner_ata_a, false),
         AccountMeta::new(*partner_ata_b, false),
-        AccountMeta::new_readonly(spl_token::id(), false),
+        AccountMeta::new_readonly(spl_token_interface::id(), false),
     ];
     accounts.extend(remaining_accounts);
     Instruction {

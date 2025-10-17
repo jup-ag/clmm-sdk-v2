@@ -1,6 +1,6 @@
 use crate::math::full_math::FullMath;
 use borsh::BorshDeserialize;
-use solana_sdk::pubkey::Pubkey;
+use solana_pubkey::Pubkey;
 
 #[allow(dead_code)]
 pub const PROTOCOL_FEE_DENOMNINATOR: u64 = 10_000;

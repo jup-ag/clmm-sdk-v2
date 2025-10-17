@@ -1,7 +1,7 @@
 use super::tick::Tick;
 use crate::math::tick_math::MIN_TICK;
 use borsh::BorshDeserialize;
-use solana_sdk::pubkey::Pubkey;
+use solana_pubkey::Pubkey;
 use std::ops::{Div, Sub};
 
 pub const CAP: usize = 64;
