@@ -20,6 +20,6 @@ solana-sdk = "1.10.29"
 solana-client = "1.10.29"
 solana-program = "1.10.29"
 jupiter = { path = "./jupiter" }
-borsh = { version = "0.9.1", features = ["const-generics"] }
+borsh = { version = "0.10.1", features = ["const-generics"] }
 sha2 = "0.10.2"
 solana-cli-config = "1.10.29"
