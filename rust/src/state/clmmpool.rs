@@ -1,13 +1,13 @@
 use crate::math::full_math::FullMath;
-use borsh::BorshDeserialize;
-use solana_sdk::pubkey::Pubkey;
+use borsh::{BorshDeserialize, BorshSerialize};
+use solana_pubkey::Pubkey;
 
 #[allow(dead_code)]
 pub const PROTOCOL_FEE_DENOMNINATOR: u64 = 10_000;
 
 pub const REWARDER_NUM: usize = 3;
 
-#[derive(BorshDeserialize, Default, Debug, Clone, Copy)]
+#[derive(BorshSerialize, BorshDeserialize, Default, Debug, Clone, Copy, Eq, PartialEq)]
 pub struct Clmmpool {
     /// clmm_config
     pub clmm_config: Pubkey,
@@ -122,7 +122,7 @@ impl Clmmpool {
     }
 }
 
-#[derive(Copy, Clone, BorshDeserialize, Default, Debug, Eq, PartialEq)]
+#[derive(BorshSerialize, BorshDeserialize, Copy, Clone, Default, Debug, Eq, PartialEq)]
 pub struct Rewarder {
     pub mint_wrapper: Pubkey,
     pub minter: Pubkey,
@@ -145,5 +145,72 @@ impl Rewarder {
     }
 }
 
-#[derive(Copy, Clone, BorshDeserialize, Default, Debug, PartialEq)]
+#[derive(BorshSerialize, BorshDeserialize, Copy, Clone, Default, Debug, Eq, PartialEq)]
 pub struct Rewarders(pub [Rewarder; 3]);
+
+#[cfg(test)]
+mod tests {
+    use super::{Clmmpool, Rewarder, Rewarders};
+    use borsh::BorshDeserialize;
+    use solana_pubkey::Pubkey;
+
+    fn test_pubkey(byte: u8) -> Pubkey {
+        [byte; 32].into()
+    }
+
+    #[test]
+    fn clmmpool_borsh_roundtrip_uses_native_pubkey_impl() {
+        let pool = Clmmpool {
+            clmm_config: test_pubkey(1),
+            token_a: test_pubkey(2),
+            token_b: test_pubkey(3),
+            token_a_vault: test_pubkey(4),
+            token_b_vault: test_pubkey(5),
+            tick_spacing: 16,
+            tick_spacing_seed: 7,
+            fee_rate: 123,
+            liquidity: 456,
+            current_sqrt_price: 789,
+            current_tick_index: -42,
+            fee_growth_global_a: 111,
+            fee_growth_global_b: 222,
+            fee_protocol_token_a: 333,
+            fee_protocol_token_b: 444,
+            bump: 9,
+            rewarder_infos: Rewarders([
+                Rewarder {
+                    mint_wrapper: test_pubkey(6),
+                    minter: test_pubkey(7),
+                    mint: test_pubkey(8),
+                    authority: test_pubkey(9),
+                    emissions_per_second: 10,
+                    growth_global: 11,
+                },
+                Rewarder {
+                    mint_wrapper: test_pubkey(12),
+                    minter: test_pubkey(13),
+                    mint: test_pubkey(14),
+                    authority: test_pubkey(15),
+                    emissions_per_second: 16,
+                    growth_global: 17,
+                },
+                Rewarder {
+                    mint_wrapper: test_pubkey(18),
+                    minter: test_pubkey(19),
+                    mint: test_pubkey(20),
+                    authority: test_pubkey(21),
+                    emissions_per_second: 22,
+                    growth_global: 23,
+                },
+            ]),
+            rewarder_last_updated_time: 555,
+            is_pause: true,
+        };
+
+        let encoded = borsh::to_vec(&pool).unwrap();
+        let decoded = Clmmpool::try_from_slice(&encoded).unwrap();
+
+        assert_eq!(encoded.len(), Clmmpool::LEN);
+        assert_eq!(decoded, pool);
+    }
+}

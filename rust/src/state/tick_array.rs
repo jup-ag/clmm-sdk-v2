@@ -1,12 +1,12 @@
 use super::tick::Tick;
 use crate::math::tick_math::MIN_TICK;
-use borsh::BorshDeserialize;
-use solana_sdk::pubkey::Pubkey;
+use borsh::{BorshDeserialize, BorshSerialize};
+use solana_pubkey::Pubkey;
 use std::ops::{Div, Sub};
 
 pub const CAP: usize = 64;
 
-#[derive(BorshDeserialize, Clone, Copy)]
+#[derive(BorshSerialize, BorshDeserialize, Clone, Copy, Debug, Eq, PartialEq)]
 pub struct TickArray {
     /// The tick array index in tick array bit map.
     pub array_index: u16,
@@ -104,10 +104,10 @@ impl TickArray {
     #[allow(dead_code)]
     pub fn get_tick(&self, tick_index: i32) -> Option<&Tick> {
         let offset = self.tick_offset(tick_index);
-        if offset < CAP as usize {
-            let t = self.ticks[offset as usize];
+        if offset < CAP {
+            let t = self.ticks[offset];
             if t.is_initialized {
-                return Some(&self.ticks[offset as usize]);
+                return Some(&self.ticks[offset]);
             }
         }
         None
@@ -148,11 +148,7 @@ impl TickArray {
 
     #[allow(dead_code)]
     pub fn get_next_initialized_tick(&self, tick_index: i32, a_to_b: bool) -> Option<&Tick> {
-        let search_range = self.search_range(tick_index, a_to_b);
-        if search_range.is_none() {
-            return None;
-        }
-        let (start, end) = search_range.unwrap();
+        let (start, end) = self.search_range(tick_index, a_to_b)?;
         match a_to_b {
             true => {
                 for i in (start..=end).rev() {
@@ -183,5 +179,50 @@ impl TickArray {
             }
         }
         false
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{TickArray, CAP};
+    use crate::state::tick::Tick;
+    use borsh::BorshDeserialize;
+
+    #[test]
+    fn tick_array_borsh_roundtrip_uses_native_pubkey_impl() {
+        let mut ticks = [Tick::default(); CAP];
+        ticks[0] = Tick {
+            is_initialized: true,
+            index: -120,
+            sqrt_price: 11,
+            liquidity_net: -12,
+            liquidity_gross: 13,
+            fee_growth_outside_a: 14,
+            fee_growth_outside_b: 15,
+            reward_growth_outside: [16, 17, 18],
+        };
+        ticks[CAP - 1] = Tick {
+            is_initialized: true,
+            index: 120,
+            sqrt_price: 21,
+            liquidity_net: 22,
+            liquidity_gross: 23,
+            fee_growth_outside_a: 24,
+            fee_growth_outside_b: 25,
+            reward_growth_outside: [26, 27, 28],
+        };
+
+        let array = TickArray {
+            array_index: 3,
+            tick_spacing: 16,
+            clmmpool: [7; 32].into(),
+            ticks,
+        };
+
+        let encoded = borsh::to_vec(&array).unwrap();
+        let decoded = TickArray::try_from_slice(&encoded).unwrap();
+
+        assert_eq!(encoded.len(), TickArray::LEN);
+        assert_eq!(decoded, array);
     }
 }

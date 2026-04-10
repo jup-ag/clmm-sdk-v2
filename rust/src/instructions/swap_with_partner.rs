@@ -1,7 +1,7 @@
 use borsh::{BorshDeserialize, BorshSerialize};
-use solana_client::rpc_client::RpcClient;
 use solana_program::instruction::{AccountMeta, Instruction};
-use solana_sdk::{pubkey, pubkey::Pubkey};
+use solana_pubkey::{pubkey, Pubkey};
+use solana_rpc_client::rpc_client::RpcClient;
 use std::vec;
 
 use crate::state::clmmpool::Clmmpool;
@@ -50,7 +50,7 @@ pub fn new_swap_with_partner(
         sqrt_price_limit,
     };
 
-    let mut dsa = data.try_to_vec().unwrap();
+    let mut dsa = borsh::to_vec(data).unwrap();
     let mut distor = sighash::sighash("global", "swap_with_partner").to_vec();
     distor.append(&mut dsa);
 
@@ -71,8 +71,7 @@ pub fn new_swap_with_partner(
     };
 
     for _ in 0..3 {
-        let array_adderss =
-            TickArray::find_address(clmmpool, expect_array_index as u16, &SWAP_PROGRAM_ID);
+        let array_adderss = TickArray::find_address(clmmpool, expect_array_index, &SWAP_PROGRAM_ID);
 
         remaining_accounts.push(AccountMeta::new(array_adderss, false));
         let next_idx = array_map.next_seted(expect_array_index.into(), a_to_b);
@@ -97,7 +96,7 @@ pub fn new_swap_with_partner(
         AccountMeta::new_readonly(*partner, false),
         AccountMeta::new(*partner_ata_a, false),
         AccountMeta::new(*partner_ata_b, false),
-        AccountMeta::new_readonly(spl_token::id(), false),
+        AccountMeta::new_readonly(spl_token_interface::id(), false),
     ];
     accounts.extend(remaining_accounts);
     Instruction {

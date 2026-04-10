@@ -1,7 +1,7 @@
 use borsh::BorshDeserialize;
 use lazy_static::lazy_static;
 use rust_decimal::Decimal;
-use solana_sdk::{pubkey, pubkey::Pubkey};
+use solana_pubkey::{pubkey, Pubkey};
 use std::collections::HashMap;
 use std::ops::{Div, Mul, Sub};
 
@@ -239,9 +239,9 @@ mod tests {
         state::clmmpool::Clmmpool,
     };
     use solana_cli_config::Config;
-    use solana_client::rpc_client::RpcClient;
-    use solana_sdk::commitment_config::{CommitmentConfig, CommitmentLevel};
-    use solana_sdk::{pubkey, pubkey::Pubkey};
+    use solana_commitment_config::{CommitmentConfig, CommitmentLevel};
+    use solana_pubkey::{pubkey, Pubkey};
+    use solana_rpc_client::rpc_client::RpcClient;
 
     #[test]
     fn test_quote() {
