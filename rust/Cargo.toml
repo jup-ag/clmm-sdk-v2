@@ -16,9 +16,9 @@ serde = "1.0.140"
 lazy_static = "1.2.0"
 rust_decimal = { version = ">=1.26.1", features = ["maths"] }
 solana-commitment-config = "3.1.1"
-solana-program = "3.0.0"
-solana-pubkey = { version = "3.0.0", features = ["borsh"] }
-solana-rpc-client = "3.1.12"
+solana-program = "4.0.0"
+solana-pubkey = { version = "4.2.0", features = ["borsh"] }
+solana-rpc-client = "4.1.2"
 # jupiter = { path = "./jupiter" }
 borsh = { version = "1", features = ["derive"] }
 bs58 = "0.5.1"
