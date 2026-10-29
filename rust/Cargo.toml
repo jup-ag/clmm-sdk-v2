@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 anchor-lang = "1.0.0"
 uint = "0.9.1"
-spl-token-interface = "2.0.0"
+spl-token-interface = "3.0.0"
 thiserror = "1.0.31"
 anyhow = "1.0"
 serde_json = "1.0.82"
